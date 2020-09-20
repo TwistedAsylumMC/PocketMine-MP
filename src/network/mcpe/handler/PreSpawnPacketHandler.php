@@ -83,7 +83,7 @@ class PreSpawnPacketHandler extends PacketHandler{
 		];
 		$pk->levelId = "";
 		$pk->worldName = $this->server->getMotd();
-		$pk->blockTable = RuntimeBlockMapping::getInstance()->getStartGamePaletteCache();
+		$pk->blockTable = RuntimeBlockMapping::getInstance()->getBedrockKnownStates();
 		$pk->itemTable = LegacyItemIdToStringIdMap::getInstance()->getStringToLegacyMap(); //TODO: check if this is actually needed
 		$this->session->sendDataPacket($pk);
 

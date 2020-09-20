@@ -196,6 +196,11 @@ class PacketPool{
 		$this->registerPacket(new PositionTrackingDBClientRequestPacket());
 		$this->registerPacket(new DebugInfoPacket());
 		$this->registerPacket(new PacketViolationWarningPacket());
+		$this->registerPacket(new SetActorMotionPlusPacket());
+		$this->registerPacket(new AnimateActorPacket());
+		$this->registerPacket(new CameraShakePacket());
+		$this->registerPacket(new PlayerFogPacket());
+		$this->registerPacket(new CorrectPlayerMovePredictionPacket());
 	}
 
 	public function registerPacket(Packet $packet) : void{

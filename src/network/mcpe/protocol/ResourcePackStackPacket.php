@@ -26,6 +26,7 @@ namespace pocketmine\network\mcpe\protocol;
 #include <rules/DataPacket.h>
 
 use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
+use pocketmine\network\mcpe\protocol\types\ExperimentData;
 use pocketmine\network\mcpe\protocol\types\resourcepacks\ResourcePackStackEntry;
 use function count;
 
@@ -40,23 +41,28 @@ class ResourcePackStackPacket extends DataPacket implements ClientboundPacket{
 	/** @var ResourcePackStackEntry[] */
 	public $resourcePackStack = [];
 
-	/** @var bool */
-	public $isExperimental = false;
 	/** @var string */
 	public $baseGameVersion = ProtocolInfo::MINECRAFT_VERSION_NETWORK;
+
+	/** @var ExperimentData[] */
+	private $experiments = [];
+	/** @var bool */
+	public $wasExperimental = false;
 
 	/**
 	 * @param ResourcePackStackEntry[] $resourcePacks
 	 * @param ResourcePackStackEntry[] $behaviorPacks
+	 * @param ExperimentData[] $experiments
 	 *
 	 * @return ResourcePackStackPacket
 	 */
-	public static function create(array $resourcePacks, array $behaviorPacks, bool $mustAccept, bool $isExperimental = false) : self{
+	public static function create(array $resourcePacks, array $behaviorPacks, bool $mustAccept, array $experiments = [], bool $wasExperimental = false) : self{
 		$result = new self;
 		$result->mustAccept = $mustAccept;
 		$result->resourcePackStack = $resourcePacks;
 		$result->behaviorPackStack = $behaviorPacks;
-		$result->isExperimental = $isExperimental;
+		$result->experiments = $experiments;
+		$result->wasExperimental = $wasExperimental;
 		return $result;
 	}
 
@@ -72,8 +78,10 @@ class ResourcePackStackPacket extends DataPacket implements ClientboundPacket{
 			$this->resourcePackStack[] = ResourcePackStackEntry::read($in);
 		}
 
-		$this->isExperimental = $in->getBool();
 		$this->baseGameVersion = $in->getString();
+
+		$this->experiments = $in->getExperiments();
+		$this->wasExperimental = $in->getBool();
 	}
 
 	protected function encodePayload(PacketSerializer $out) : void{
@@ -89,8 +97,10 @@ class ResourcePackStackPacket extends DataPacket implements ClientboundPacket{
 			$entry->write($out);
 		}
 
-		$out->putBool($this->isExperimental);
 		$out->putString($this->baseGameVersion);
+
+		$out->putExperiments($this->experiments);
+		$out->putBool($this->wasExperimental);
 	}
 
 	public function handle(PacketHandlerInterface $handler) : bool{

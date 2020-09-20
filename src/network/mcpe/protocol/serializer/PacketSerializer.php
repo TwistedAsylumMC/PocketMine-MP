@@ -53,6 +53,7 @@ use pocketmine\network\mcpe\protocol\types\inventory\ItemStack;
 use pocketmine\network\mcpe\protocol\types\PersonaPieceTintColor;
 use pocketmine\network\mcpe\protocol\types\PersonaSkinPiece;
 use pocketmine\network\mcpe\protocol\types\recipe\RecipeIngredient;
+use pocketmine\network\mcpe\protocol\types\ExperimentData;
 use pocketmine\network\mcpe\protocol\types\SkinAnimation;
 use pocketmine\network\mcpe\protocol\types\SkinData;
 use pocketmine\network\mcpe\protocol\types\SkinImage;
@@ -694,6 +695,29 @@ class PacketSerializer extends BinaryStream{
 		$this->putVarInt($structureEditorData->structureBlockType);
 		$this->putStructureSettings($structureEditorData->structureSettings);
 		$this->putVarInt($structureEditorData->structureRedstoneSaveMove);
+	}
+
+	/**
+	 * @return ExperimentData[]
+	 */
+	public function getExperiments() : array{
+		$result = [];
+
+		for($i = 0, $count = $this->getLInt();  $i < $count; ++$i){
+			$result[] = ExperimentData::read($this);
+		}
+
+		return $result;
+	}
+
+	/**
+	 * @param ExperimentData[] $experiments
+	 */
+	public function putExperiments(array $experiments) : void{
+		$this->putLInt(count($experiments));
+		foreach($experiments as $experiment){
+			$experiment->write($this);
+		}
 	}
 
 	public function getNbtRoot() : TreeRoot{

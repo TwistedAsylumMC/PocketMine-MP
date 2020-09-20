@@ -667,6 +667,7 @@ class NetworkSession{
 			$pk->yaw = $yaw;
 			$pk->mode = $mode;
 			$pk->onGround = $this->player->onGround;
+			$pk->tick = $this->server->getTick();
 
 			$this->sendDataPacket($pk);
 		}
@@ -722,7 +723,7 @@ class NetworkSession{
 		if(count($attributes) > 0){
 			$this->sendDataPacket(UpdateAttributesPacket::create($entity->getId(), array_map(function(Attribute $attr) : NetworkAttribute{
 				return new NetworkAttribute($attr->getId(), $attr->getMinValue(), $attr->getMaxValue(), $attr->getValue(), $attr->getDefaultValue());
-			}, $attributes)));
+			}, $attributes), $entity->getWorld()->getServer()->getTick()));
 		}
 	}
 
@@ -731,7 +732,7 @@ class NetworkSession{
 	 * @phpstan-param array<int, MetadataProperty> $properties
 	 */
 	public function syncActorData(Entity $entity, array $properties) : void{
-		$this->sendDataPacket(SetActorDataPacket::create($entity->getId(), $properties));
+		$this->sendDataPacket(SetActorDataPacket::create($entity->getId(), $properties, $entity->getWorld()->getServer()->getTick()));
 	}
 
 	public function onEntityEffectAdded(Living $entity, EffectInstance $effect, bool $replacesOldEffect) : void{

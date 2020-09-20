@@ -33,6 +33,7 @@ use pocketmine\network\mcpe\protocol\AddItemActorPacket;
 use pocketmine\network\mcpe\protocol\AddPaintingPacket;
 use pocketmine\network\mcpe\protocol\AddPlayerPacket;
 use pocketmine\network\mcpe\protocol\AdventureSettingsPacket;
+use pocketmine\network\mcpe\protocol\AnimateActorPacket;
 use pocketmine\network\mcpe\protocol\AnimatePacket;
 use pocketmine\network\mcpe\protocol\AnvilDamagePacket;
 use pocketmine\network\mcpe\protocol\AutomationClientConnectPacket;
@@ -45,6 +46,7 @@ use pocketmine\network\mcpe\protocol\BlockPickRequestPacket;
 use pocketmine\network\mcpe\protocol\BookEditPacket;
 use pocketmine\network\mcpe\protocol\BossEventPacket;
 use pocketmine\network\mcpe\protocol\CameraPacket;
+use pocketmine\network\mcpe\protocol\CameraShakePacket;
 use pocketmine\network\mcpe\protocol\ChangeDimensionPacket;
 use pocketmine\network\mcpe\protocol\ChunkRadiusUpdatedPacket;
 use pocketmine\network\mcpe\protocol\ClientboundMapItemDataPacket;
@@ -60,6 +62,7 @@ use pocketmine\network\mcpe\protocol\CompletedUsingItemPacket;
 use pocketmine\network\mcpe\protocol\ContainerClosePacket;
 use pocketmine\network\mcpe\protocol\ContainerOpenPacket;
 use pocketmine\network\mcpe\protocol\ContainerSetDataPacket;
+use pocketmine\network\mcpe\protocol\CorrectPlayerMovePredictionPacket;
 use pocketmine\network\mcpe\protocol\CraftingDataPacket;
 use pocketmine\network\mcpe\protocol\CraftingEventPacket;
 use pocketmine\network\mcpe\protocol\CreativeContentPacket;
@@ -111,6 +114,7 @@ use pocketmine\network\mcpe\protocol\PlayerActionPacket;
 use pocketmine\network\mcpe\protocol\PlayerArmorDamagePacket;
 use pocketmine\network\mcpe\protocol\PlayerAuthInputPacket;
 use pocketmine\network\mcpe\protocol\PlayerEnchantOptionsPacket;
+use pocketmine\network\mcpe\protocol\PlayerFogPacket;
 use pocketmine\network\mcpe\protocol\PlayerHotbarPacket;
 use pocketmine\network\mcpe\protocol\PlayerInputPacket;
 use pocketmine\network\mcpe\protocol\PlayerListPacket;
@@ -139,6 +143,7 @@ use pocketmine\network\mcpe\protocol\ServerToClientHandshakePacket;
 use pocketmine\network\mcpe\protocol\SetActorDataPacket;
 use pocketmine\network\mcpe\protocol\SetActorLinkPacket;
 use pocketmine\network\mcpe\protocol\SetActorMotionPacket;
+use pocketmine\network\mcpe\protocol\SetActorMotionPlusPacket;
 use pocketmine\network\mcpe\protocol\SetCommandsEnabledPacket;
 use pocketmine\network\mcpe\protocol\SetDefaultGameTypePacket;
 use pocketmine\network\mcpe\protocol\SetDifficultyPacket;
@@ -799,6 +804,26 @@ abstract class PacketHandler implements PacketHandlerInterface{
 	}
 
 	public function handlePacketViolationWarning(PacketViolationWarningPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleSetActorMotionPlus(SetActorMotionPlusPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleAnimateActor(AnimateActorPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleCameraShake(CameraShakePacket $packet) : bool{
+		return false;
+	}
+
+	public function handlePlayerFog(PlayerFogPacket $packet) : bool{
+		return false;
+	}
+
+	public function handleCorrectPlayerMovePrediction(CorrectPlayerMovePredictionPacket $packet) : bool{
 		return false;
 	}
 }

@@ -35,17 +35,17 @@ final class ProtocolInfo{
 	/**
 	 * NOTE TO DEVELOPERS
 	 * Do not waste your time or ours submitting pull requests changing game and/or protocol version numbers.
-	 * Pull requests changing game and/or protocol version numbers will be closed.
+	 * Pull requests changing game and/or protocolA version numbers will be closed.
 	 *
 	 * This file is generated automatically, do not edit it manually.
 	 */
 
 	/** Actual Minecraft: PE protocol version */
-	public const CURRENT_PROTOCOL = 408;
+	public const CURRENT_PROTOCOL = 414;
 	/** Current Minecraft PE version reported by the server. This is usually the earliest currently supported version. */
-	public const MINECRAFT_VERSION = 'v1.16.20';
+	public const MINECRAFT_VERSION = 'v1.16.100.55';
 	/** Version number sent to clients in ping responses. */
-	public const MINECRAFT_VERSION_NETWORK = '1.16.20';
+	public const MINECRAFT_VERSION_NETWORK = '1.16.100';
 
 	public const LOGIN_PACKET = 0x01;
 	public const PLAY_STATUS_PACKET = 0x02;
@@ -203,5 +203,10 @@ final class ProtocolInfo{
 	public const POSITION_TRACKING_D_B_CLIENT_REQUEST_PACKET = 0x9a;
 	public const DEBUG_INFO_PACKET = 0x9b;
 	public const PACKET_VIOLATION_WARNING_PACKET = 0x9c;
+	public const SET_ACTOR_MOTION_PLUS_PACKET = 0x9d;
+	public const ANIMATE_ACTOR_PACKET = 0x9e;
+	public const CAMERA_SHAKE_PACKET = 0x9f;
+	public const PLAYER_FOG_PACKET = 0xa0;
+	public const CORRECT_PLAYER_MOVE_PREDICTION_PACKET = 0xa1;
 
 }

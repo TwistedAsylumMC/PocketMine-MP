@@ -25,48 +25,45 @@ namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
 
+use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
-use pocketmine\network\mcpe\protocol\types\entity\MetadataProperty;
 
-class SetActorDataPacket extends DataPacket implements ClientboundPacket, ServerboundPacket{ //TODO: check why this is serverbound
-	public const NETWORK_ID = ProtocolInfo::SET_ACTOR_DATA_PACKET;
+class CorrectPlayerMovePredictionPacket extends DataPacket implements ClientboundPacket{
+	public const NETWORK_ID = ProtocolInfo::CORRECT_PLAYER_MOVE_PREDICTION_PACKET;
 
-	/** @var int */
-	public $entityRuntimeId;
-	/**
-	 * @var MetadataProperty[]
-	 * @phpstan-var array<int, MetadataProperty>
-	 */
-	public $metadata;
+	/** @var Vector3 */
+	public $position;
+	/** @var Vector3 */
+	public $delta;
+	/** @var bool */
+	public $onGround;
 	/** @var int */
 	public $tick;
 
-	/**
-	 * @param MetadataProperty[] $metadata
-	 * @phpstan-param array<int, MetadataProperty> $metadata
-	 */
-	public static function create(int $entityRuntimeId, array $metadata, int $tick) : self{
-
+	public static function create(Vector3 $position, Vector3 $delta, bool $onGround, int $tick) : self{
 		$result = new self;
-		$result->entityRuntimeId = $entityRuntimeId;
-		$result->metadata = $metadata;
+		$result->position = $position->asVector3();
+		$result->delta = $delta->asVector3();
+		$result->onGround = $onGround;
 		$result->tick = $tick;
 		return $result;
 	}
 
 	protected function decodePayload(PacketSerializer $in) : void{
-		$this->entityRuntimeId = $in->getEntityRuntimeId();
-		$this->metadata = $in->getEntityMetadata();
+		$this->position = $in->getVector3();
+		$this->delta = $in->getVector3();
+		$this->onGround = $in->getBool();
 		$this->tick = $in->getUnsignedVarLong();
 	}
 
 	protected function encodePayload(PacketSerializer $out) : void{
-		$out->putEntityRuntimeId($this->entityRuntimeId);
-		$out->putEntityMetadata($this->metadata);
+		$out->putVector3($this->position);
+		$out->putVector3($this->delta);
+		$out->putBool($this->onGround);
 		$out->putUnsignedVarLong($this->tick);
 	}
 
 	public function handle(PacketHandlerInterface $handler) : bool{
-		return $handler->handleSetActorData($this);
+		return $handler->handleCorrectPlayerMovePrediction($this);
 	}
 }

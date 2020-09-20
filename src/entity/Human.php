@@ -423,6 +423,7 @@ class Human extends Living implements ProjectileSource, InventoryHolder{
 		$pk->pitch = $this->location->pitch;
 		$pk->headYaw = $this->location->yaw;
 		$pk->mode = $teleport ? MovePlayerPacket::MODE_TELEPORT : MovePlayerPacket::MODE_NORMAL;
+		$pk->tick = $this->server->getTick();
 		//we can't assume that everyone who is using our chunk wants to see this movement,
 		//because this human might be a player who shouldn't be receiving his own movement.
 		//this didn't matter when we were able to use MoveActorPacket because

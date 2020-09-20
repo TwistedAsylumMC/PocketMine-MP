@@ -25,48 +25,40 @@ namespace pocketmine\network\mcpe\protocol;
 
 #include <rules/DataPacket.h>
 
+use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
-use pocketmine\network\mcpe\protocol\types\entity\MetadataProperty;
 
-class SetActorDataPacket extends DataPacket implements ClientboundPacket, ServerboundPacket{ //TODO: check why this is serverbound
-	public const NETWORK_ID = ProtocolInfo::SET_ACTOR_DATA_PACKET;
+class SetActorMotionPlusPacket extends DataPacket implements ClientboundPacket, GarbageServerboundPacket{
+	public const NETWORK_ID = ProtocolInfo::SET_ACTOR_MOTION_PLUS_PACKET;
 
 	/** @var int */
 	public $entityRuntimeId;
-	/**
-	 * @var MetadataProperty[]
-	 * @phpstan-var array<int, MetadataProperty>
-	 */
-	public $metadata;
-	/** @var int */
-	public $tick;
+	/** @var Vector3 */
+	public $motion;
+	/** @var bool */
+	public $onGround;
 
-	/**
-	 * @param MetadataProperty[] $metadata
-	 * @phpstan-param array<int, MetadataProperty> $metadata
-	 */
-	public static function create(int $entityRuntimeId, array $metadata, int $tick) : self{
-
+	public static function create(int $entityRuntimeId, Vector3 $motion, bool $onGround) : self{
 		$result = new self;
 		$result->entityRuntimeId = $entityRuntimeId;
-		$result->metadata = $metadata;
-		$result->tick = $tick;
+		$result->motion = $motion->asVector3();
+		$result->onGround = $onGround;
 		return $result;
 	}
 
 	protected function decodePayload(PacketSerializer $in) : void{
 		$this->entityRuntimeId = $in->getEntityRuntimeId();
-		$this->metadata = $in->getEntityMetadata();
-		$this->tick = $in->getUnsignedVarLong();
+		$this->motion = $in->getVector3();
+		$this->onGround = $in->getBool();
 	}
 
 	protected function encodePayload(PacketSerializer $out) : void{
 		$out->putEntityRuntimeId($this->entityRuntimeId);
-		$out->putEntityMetadata($this->metadata);
-		$out->putUnsignedVarLong($this->tick);
+		$out->putVector3($this->motion);
+		$out->putBool($this->onGround);
 	}
 
 	public function handle(PacketHandlerInterface $handler) : bool{
-		return $handler->handleSetActorData($this);
+		return $handler->handleSetActorMotionPlus($this);
 	}
 }

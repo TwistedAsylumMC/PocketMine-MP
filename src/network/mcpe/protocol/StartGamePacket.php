@@ -26,6 +26,7 @@ namespace pocketmine\network\mcpe\protocol;
 #include <rules/DataPacket.h>
 
 use pocketmine\math\Vector3;
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\nbt\tag\ListTag;
 use pocketmine\network\mcpe\protocol\serializer\PacketSerializer;
 use pocketmine\network\mcpe\protocol\types\CacheableNbt;
@@ -34,11 +35,16 @@ use pocketmine\network\mcpe\protocol\types\GameRule;
 use pocketmine\network\mcpe\protocol\types\GeneratorType;
 use pocketmine\network\mcpe\protocol\types\MultiplayerGameVisibility;
 use pocketmine\network\mcpe\protocol\types\PlayerPermissions;
+use pocketmine\network\mcpe\protocol\types\ExperimentData;
 use pocketmine\network\mcpe\protocol\types\SpawnSettings;
 use function count;
 
 class StartGamePacket extends DataPacket implements ClientboundPacket{
 	public const NETWORK_ID = ProtocolInfo::START_GAME_PACKET;
+
+	public const AUTHORITATIVE_MOVEMENT_MODE_CLIENT = 0;
+	public const AUTHORITATIVE_MOVEMENT_MODE_SERVER = 1;
+	public const AUTHORITATIVE_MOVEMENT_MODE_SERVER_WITH_REWIND = 2;
 
 	/** @var int */
 	public $entityUniqueId;
@@ -104,6 +110,10 @@ class StartGamePacket extends DataPacket implements ClientboundPacket{
 	 * @phpstan-var array<string, GameRule>
 	 */
 	public $gameRules = [];
+	/** @var ExperimentData[] */
+	public $experiments = [];
+	/** @var bool */
+	public $hadExperimentsToggled = false;
 	/** @var bool */
 	public $hasBonusChestEnabled = false;
 	/** @var bool */
@@ -148,7 +158,7 @@ class StartGamePacket extends DataPacket implements ClientboundPacket{
 	/** @var bool */
 	public $isTrial = false;
 	/** @var bool */
-	public $isMovementServerAuthoritative = false;
+	public $authoritativeMovementMode = self::AUTHORITATIVE_MOVEMENT_MODE_CLIENT;
 	/** @var int */
 	public $currentTick = 0; //only used if isTrial is true
 	/** @var int */
@@ -159,10 +169,9 @@ class StartGamePacket extends DataPacket implements ClientboundPacket{
 	public $enableNewInventorySystem = false; //TODO
 
 	/**
-	 * @var CacheableNbt
-	 * @phpstan-var CacheableNbt<\pocketmine\nbt\tag\ListTag>
+	 * @var CompoundTag[]
 	 */
-	public $blockTable;
+	public $blockTable = [];
 	/**
 	 * @var int[] string (name) => int16 (legacyID)
 	 * @phpstan-var array<string, int>
@@ -201,6 +210,8 @@ class StartGamePacket extends DataPacket implements ClientboundPacket{
 		$this->commandsEnabled = $in->getBool();
 		$this->isTexturePacksRequired = $in->getBool();
 		$this->gameRules = $in->getGameRules();
+		$this->experiments = $in->getExperiments();
+		$this->hadExperimentsToggled = $in->getBool();
 		$this->hasBonusChestEnabled = $in->getBool();
 		$this->hasStartWithMapEnabled = $in->getBool();
 		$this->defaultPlayerPermission = $in->getVarInt();
@@ -226,16 +237,20 @@ class StartGamePacket extends DataPacket implements ClientboundPacket{
 		$this->worldName = $in->getString();
 		$this->premiumWorldTemplateId = $in->getString();
 		$this->isTrial = $in->getBool();
-		$this->isMovementServerAuthoritative = $in->getBool();
+		$this->authoritativeMovementMode = $in->getUnsignedVarInt();
 		$this->currentTick = $in->getLLong();
 
 		$this->enchantmentSeed = $in->getVarInt();
 
-		$blockTable = $in->getNbtRoot()->getTag();
-		if(!($blockTable instanceof ListTag)){
-			throw new \UnexpectedValueException("Wrong block table root NBT tag type");
+		$this->blockTable = [];
+		for($i = 0, $count = $in->getUnsignedVarInt(); $i < $count; ++$i){
+			$name = $in->getString();
+			/** @var CompoundTag $properties */
+			$properties = $in->getNbtRoot()->getTag();
+
+			$properties->getCompoundTag("block")->setString("name", $name);
+			$this->blockTable[] = $properties;
 		}
-		$this->blockTable = new CacheableNbt($blockTable);
 
 		$this->itemTable = [];
 		for($i = 0, $count = $in->getUnsignedVarInt(); $i < $count; ++$i){
@@ -281,6 +296,8 @@ class StartGamePacket extends DataPacket implements ClientboundPacket{
 		$out->putBool($this->commandsEnabled);
 		$out->putBool($this->isTexturePacksRequired);
 		$out->putGameRules($this->gameRules);
+		$out->putExperiments($this->experiments);
+		$out->putBool($this->hadExperimentsToggled);
 		$out->putBool($this->hasBonusChestEnabled);
 		$out->putBool($this->hasStartWithMapEnabled);
 		$out->putVarInt($this->defaultPlayerPermission);
@@ -305,17 +322,31 @@ class StartGamePacket extends DataPacket implements ClientboundPacket{
 		$out->putString($this->worldName);
 		$out->putString($this->premiumWorldTemplateId);
 		$out->putBool($this->isTrial);
-		$out->putBool($this->isMovementServerAuthoritative);
+		$out->putUnsignedVarInt($this->authoritativeMovementMode);
 		$out->putLLong($this->currentTick);
 
 		$out->putVarInt($this->enchantmentSeed);
 
-		$out->put($this->blockTable->getEncodedNbt());
+		$out->put(self::serializeBlockTable($this->blockTable));
 
 		$out->put(self::serializeItemTable($this->itemTable));
 
 		$out->putString($this->multiplayerCorrelationId);
 		$out->putBool($this->enableNewInventorySystem);
+	}
+
+	/**
+	 * @param CompoundTag[] $table
+	 * @phpstan-param array<string, CompoundTag> $table
+	 */
+	private static function serializeBlockTable(array $table) : string{
+		$stream = new PacketSerializer();
+		$stream->putUnsignedVarInt(count($table));
+		foreach($table as $block){
+			$stream->putString($block->getString("name"));
+			$stream->put((new CacheableNbt($block->getCompoundTag("states")))->getEncodedNbt());
+		}
+		return $stream->getBuffer();
 	}
 
 	/**

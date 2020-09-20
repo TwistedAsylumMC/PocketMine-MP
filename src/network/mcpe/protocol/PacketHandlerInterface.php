@@ -332,4 +332,14 @@ interface PacketHandlerInterface{
 	public function handleDebugInfo(DebugInfoPacket $packet) : bool;
 
 	public function handlePacketViolationWarning(PacketViolationWarningPacket $packet) : bool;
+
+	public function handleSetActorMotionPlus(SetActorMotionPlusPacket $packet) : bool;
+
+	public function handleAnimateActor(AnimateActorPacket $packet) : bool;
+
+	public function handleCameraShake(CameraShakePacket $packet) : bool;
+
+	public function handlePlayerFog(PlayerFogPacket $packet) : bool;
+
+	public function handleCorrectPlayerMovePrediction(CorrectPlayerMovePredictionPacket $packet) : bool;
 }
