@@ -39,7 +39,7 @@ jobs:
           echo "::error::Invalid branch"
           exit 1
         fi
-        git pull --ff origin "$LOWER_BRANCH" || echo "::error::Merge conflict or error detected" && exit 1
+        git pull --ff origin "$LOWER_BRANCH" || (echo "::error::Merge conflict or error detected" && exit 1)
 
     - name: Push changes
       run: git push origin ${{ github.event.inputs.branch }}
