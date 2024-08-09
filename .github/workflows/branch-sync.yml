@@ -29,7 +29,7 @@ jobs:
     - name: Merge lower branch into target branch
       id: merge
       run: |
-        LOWER_BRANCH=
+        LOWER_BRANCH=""
         if [ ${{ github.event.inputs.branch }} == "minor-next" ]; then
           LOWER_BRANCH="stable"
         else if [ ${{ github.event.inputs.branch }} == "major-next" ]; then
