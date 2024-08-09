@@ -30,9 +30,9 @@ jobs:
       id: merge
       run: |
         LOWER_BRANCH=""
-        if [ ${{ github.event.inputs.branch }} == "minor-next" ]; then
+        if [ "${{ github.event.inputs.branch }}" == "minor-next" ]; then
           LOWER_BRANCH="stable"
-        else if [ ${{ github.event.inputs.branch }} == "major-next" ]; then
+        elif [ "${{ github.event.inputs.branch }}" == "major-next" ]; then
           LOWER_BRANCH="minor-next"
         else
           echo "::error::Invalid branch"
