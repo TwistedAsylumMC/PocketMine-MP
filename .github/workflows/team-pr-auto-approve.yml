@@ -26,7 +26,7 @@ jobs:
           username: ${{ github.event.pull_request.user.login }}
 
       - name: Approve PR if authorized
-        if: steps.check-permission.outputs.require-result == true
+        if: steps.check-permission.outputs.require-result == 'true'
         uses: juliangruber/approve-pull-request-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
