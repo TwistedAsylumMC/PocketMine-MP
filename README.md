@@ -29,7 +29,7 @@ If you're looking to create a Minecraft: Bedrock server with **custom functional
 - 🗺️ **Rich ecosystem** and **large developer community** - find plugins easily and learn to develop your own
 - 🌐 **Multi-world support** - offer a more varied game experience to players without transferring them to other server nodes
 - 🏎️ **Performance** - get 100+ players onto one server (depending on hardware and plugins)
-- ⤴️ **Continuously updated** - new Minecraft versions are usually supported within days
+- ⤴️ **Continuously updated** - new Minecraft versions are never supported
 
 ## :x: PocketMine-MP is NOT a vanilla Minecraft server software.
 **It is poorly suited to hosting vanilla survival servers.**
