@@ -1,0 +1,33 @@
+name: Auto approve PRs by team members
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - synchronize
+      - reopened
+      - ready_for_review
+
+permissions:
+  pull-requests: write
+
+jobs:
+  approve:
+    name: Auto approve PRs by team members
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check if PR author has write access
+        id: check-permission
+        uses: actions-cool/check-user-permission@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          require: write
+          username: ${{ github.event.pull_request.user.login }}
+
+      - name: Approve PR if authorized
+        if: steps.check-permission.outputs.require-result == true
+        uses: juliangruber/approve-pull-request-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          number: ${{ github.event.pull_request.number }}
