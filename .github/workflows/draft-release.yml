@@ -1,21 +1,19 @@
 name: Draft release
 
 on:
-  pull_request_target:
-    types:
-      - closed
-    branches:
-      - stable
-      - minor-next
-      - major-next
-      - "legacy/*"
-    paths:
-      - "src/VersionInfo.php"
+  workflow_call:
+    outputs:
+      draft-url:
+        description: 'The URL of the draft release'
+        value: ${{ jobs.draft.outputs.draft-url }}
+      version:
+        description: 'PocketMine-MP version'
+        value: ${{ jobs.draft.outputs.version }}
 
 jobs:
-  check-validity:
-    name: Check that this PR merge is a valid release target
-    if: github.event.pull_request.merged == true
+  draft:
+    name: Create GitHub draft release
+
     runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
@@ -23,46 +21,8 @@ jobs:
         php-version: [8.2]
 
     outputs:
-      valid: ${{ steps.validate.outputs.VALID_RELEASE }}
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@2.31.1
-        with:
-          php-version: ${{ matrix.php-version }}
-
-      - name: Restore Composer package cache
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/composer/files
-            ~/.cache/composer/vcs
-          key: "composer-v2-cache-${{ hashFiles('./composer.lock') }}"
-          restore-keys: |
-            composer-v2-cache-
-
-      - name: Install Composer dependencies
-        run: composer install --no-dev --prefer-dist --no-interaction --ignore-platform-reqs
-
-      - name: Check IS_DEVELOPMENT_BUILD flag
-        id: validate
-        run: |
-          echo VALID_RELEASE=$(php -r 'require "vendor/autoload.php"; echo \pocketmine\VersionInfo::IS_DEVELOPMENT_BUILD ? "false" : "true";') >> $GITHUB_OUTPUT
-
-      #TODO: check this user is authorized to create a release PR in the first place
-
-  draft:
-    name: Create GitHub draft release
-    needs: [check-validity]
-    if: needs.check-validity.outputs.valid == 'true'
-
-    runs-on: ubuntu-20.04
-    strategy:
-      fail-fast: false
-      matrix:
-        php-version: [8.2]
+      draft-url: ${{ steps.create-draft.outputs.html_url }}
+      version: ${{ steps.get-pm-version.outputs.PM_VERSION }}
 
     steps:
       - uses: actions/checkout@v4
@@ -141,6 +101,7 @@ jobs:
 
       - name: Create draft release
         uses: ncipollo/release-action@v1.14.0
+        id: create-draft
         with:
           artifacts: ${{ github.workspace }}/PocketMine-MP.phar,${{ github.workspace }}/start.*,${{ github.workspace }}/build_info.json,${{ github.workspace }}/core-permissions.rst
           commit: ${{ github.sha }}
@@ -149,6 +110,7 @@ jobs:
           name: PocketMine-MP ${{ steps.get-pm-version.outputs.PM_VERSION }}
           tag: ${{ steps.get-pm-version.outputs.PM_VERSION }}
           token: ${{ secrets.GITHUB_TOKEN }}
+          skipIfReleaseExists: true #for release PRs, tags will be created on release publish and trigger the tag release workflow - don't create a second draft
           body: |
             **For Minecraft: Bedrock Edition ${{ steps.get-pm-version.outputs.MCPE_VERSION }}**
 
