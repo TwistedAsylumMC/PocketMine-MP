@@ -1,0 +1,16 @@
+name: Send PR merge reminder
+
+on:
+  pull_request_review:
+    types: ['submitted']
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send PR merge reminder
+        if: github.event.pull_request.mergeable
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: "Looks like this PR is ready to merge!"
